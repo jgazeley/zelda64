@@ -11,4 +11,5 @@ Works with both (NTSC/PAL) versions of the game, but you must specify when writi
 Examples from command line: 
 
 python3 'zelda.py' 'THE LEGEND OF ZELDA.sra'
+
 py 'C:\Users\Downloads\zelda.py' 'C:\Users\Games\Retroarch\N64\Saves\Legend of Zelda, The - Ocarina of Time.srm'
