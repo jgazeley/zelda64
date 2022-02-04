@@ -5,19 +5,16 @@ from shutil import copy2
 ntsc = 1
 pal = 2
 
+#################################################################################
+# Reads existing name in a given file position.
+# Parameters: .sra/.ram/.srm filepath and save position (1-3)
 def read(sram, slot):
-	name = ""
-	p = format(sram)
-	endian = p[0]
-	address = p[1][slot - 1]
-
-	if endian != 'big' and endian != 'little':
-		print("Invalid format!")
-		return
-
+	endian = format(sram)[0]
+	address = format(sram)[1][slot - 1]
 	f = open(sram, 'rb')
 	f.seek(address + 0x24)
 
+	name = ""
 	for x in range(0, 8):
 		val = int.from_bytes(f.read(1), 'big')
 
@@ -55,17 +52,16 @@ def read(sram, slot):
 
 	return name
 
+#################################################################################
+# Writes a new name to the desired file position. 
+# Parameters: .sra/.ram/.srm <filepath>, save position (1-3), region (ntsc/pal), and new name (string)
 def write(sram, slot, region, name):
-	data = []
+	endian = format(sram)[0]
+	address = format(sram)[1][slot - 1]
 	padcount = 8 - len(name)
-	p = format(sram)
-	endian = p[0]
-	address = p[1][slot - 1]
+	data = []
 
-	if endian != 'big' and endian != 'little':
-		print("Invalid format!")
-		return
-
+	# Converts characters to Unicode for display in menu
 	for x in range(0, len(name)):
 		val = ord(name[x])
 
@@ -104,6 +100,7 @@ def write(sram, slot, region, name):
 
 		data.append(val)
 
+	# Pads name with values 0xDF/0x3E (NTSC/PAL) if less than 8 characters
 	if padcount > 0:
 		for x in range(0, padcount):
 			if region == ntsc:
@@ -111,6 +108,7 @@ def write(sram, slot, region, name):
 			if region == pal:
 				data.append(0x3e)
 
+	# Creates backup copy of input file before writing data
 	copy = realpath(sram) + '.bak'
 	existing = exists(copy)
 	while existing:
@@ -121,17 +119,22 @@ def write(sram, slot, region, name):
 	f = open(sram, 'r+b')
 	f.seek(address + 0x24)
 
+	# Rearranges letters for display if file is in little endian
 	if endian == 'little':
 		data = data[0:4][::-1] + data[4:8][::-1]
 
 	f.write(bytes(data))
 	f.close()
 
+	# Gets new checksum and splits 16-bit result into two bytes
 	cksum = checksum(sram, slot)
 	data = [(cksum >> 8) & 0xff, cksum & 0xff]
 
 	f = open(sram, 'r+b')
 
+	# Reverses the 2 bytes for the checksum (if not big endian) and chooses the address 
+	# of the final 2 bytes based on endianness due to asymmetry.
+	# Done so algorithm works with all file types without byteswapping
 	if endian == 'big':
 		f.seek(address + 0x1352)
 	if endian == 'little':
@@ -141,13 +144,16 @@ def write(sram, slot, region, name):
 	f.write(bytes(data))
 	f.close()
 
+#################################################################################
+# Adds up 16-bit words of length 0x1352 from save file offset position to checksum position
+# Returns 16-bit checksum in big endian (N64 native)
+# Parameters: .sra/.ram/.srm <filepath> and save position (1-3)
 def checksum(sram, slot):
-	result = 0
-	p = format(sram)
-	endian = p[0]
-	address = p[1][slot - 1]
+	endian = format(sram)[0]
+	address = format(sram)[1][slot - 1]
 	f = open(sram, 'rb')
 	f.seek(address)
+	result = 0
 
 	x = address
 	while x < address + 0x1350:
@@ -157,6 +163,8 @@ def checksum(sram, slot):
 			result & 0xffff
 		x += 0x2
 
+	# Chooses the address of the final 2 bytes based on endianness due to asymmetry
+	# Done so algorithm works with all file types without byteswapping
 	if endian == 'big':
 		f.seek(address + 0x1350)
 	if endian == 'little':
@@ -166,12 +174,14 @@ def checksum(sram, slot):
 	f.close()
 	return result & 0xffff
 
+#################################################################################
+# Checks the endianness and file size to verify input file is a valid format
+# Parameters: .sra/.ram/.srm <filepath>
 def format(sram):
 	f = open(sram, 'rb')
 	fsize = getsize(sram)
-	endian = ''
-	result = []
 
+	# 32 KB saves (.sra, .ram) / Project 64, Mupen64, 1964
 	if fsize == 32768:
 		f.seek(0x8)
 		flag = int.from_bytes(f.read(2), 'big')
@@ -179,17 +189,66 @@ def format(sram):
 			endian = 'little'
 		if flag == 0x454c:
 			endian = 'big'
-		slots = [0x20, 0x1470, 0x28c0]
+		else:
+			print('Invalid format!')
+			exit()
+		offsets = [0x20, 0x1470, 0x28c0]
+
+	# 290 KB saves (.srm) / Retroarch
 	elif fsize == 296960:
-		endian = 'little'
-		slots = [0x20820, 0x21c70, 0x230c0]
+		f.seek(0x20808)
+		flag = int.from_bytes(f.read(2), 'big')
+		if flag != 0x4144:
+			print('Invalid format!')
+			exit()
+		else:
+			endian = 'little'
+			offsets = [0x20820, 0x21c70, 0x230c0]
+
 	else:
 		print('Invalid format, file size incorrect!')
-		return
-	result = [endian, slots]
-	f.close()
+		exit()
+
+	f.close()	
+	result = [endian, offsets]
 	return result
 
+#################################################################################
+# Checks if the name contains valid characters and is a valid length (1-8 characters)
+# Parameters: User entered name (string)
+def valid_name(name):
+	chars = [0x20, 0x2d, 0x2e]
+	i = 0x30
+	for i in range(i, 0x3a):
+		chars.append(i)
+	i = 0x41
+	for i in range(i, 0x5b):
+		chars.append(i)
+	i = 0x61
+	for i in range(i, 0x7b):
+		chars.append(i)
+	i = 0
+	for i in range(i, len(name)):
+		ch = ord(name[i])
+		if ch in chars:
+			pass
+		else:
+			print('Name contains invalid characters.')
+			return False
+	if len(name) > 8:
+		print('Name must be between 1 and 8 characters.')
+		return False
+	if len(name) == 0:
+		print('Name cannot be empty.')
+		return False
+	if name[0] == " ":
+		print('Name cannot begin with a space.')
+		return False
+	return True
+
+#################################################################################
+# Main menu
+# Parameter: .sra/.ram/.srm <filepath> (argument comes from command line/Powershell; see readme or comment below)
 def menu(sram):
 	print("----------------------------------------------------------------")
 	print("The Legend of Zelda: Ocarina of Time | Save Name Editor")
@@ -203,36 +262,34 @@ def menu(sram):
 	if key == '1' or key == '2' or key == '3':
 		x = int(key, 10)
 
-		b = True
-		while b:
+		a = True
+		while a:
 			key = input('Are you sure? y/n: ')
 			if key == 'n':
-				return
+				menu(sram)
+				exit()
 			elif key == 'y':
-				name = ""
-				while len(name) == 0 or len(name) > 8:
-					name = input('Please enter a new name: ')
-					if name == "" or len(name) > 8:
-						print('Name must be between 1 and 8 characters.')
-				c = True
-				while c:
-					key = input('Please enter 1 for NTSC or 2 for PAL: ')
-					if key == '1':
-						region = 1
-						c = False
-					elif key == '2':
-						region = 2
-						c = False
-					else:
-						print('Enter a valid entry.')
-				b = False
+				a = False
 			else:
 				print('You must enter y or n.')
-
-
+		b = True
+		while b:
+			name = input('Please enter a new name: ')
+			if valid_name(name):
+				b = False
+		c = True
+		while c:
+			key = input('Please enter 1 for NTSC or 2 for PAL: ')
+			if key != '1' and key != '2':
+				print('Enter a valid entry.')
+			else:
+				region = int(key, 10)
+				c = False
 
 		write(sram, x, region, name)
 		print('\nName successfully written!\n')
 		menu(sram)
 
+# Run from command line/Powershell using ~$ python3 zelda.py <filepath>
+# Example: $ python3 'zelda.py' 'D:/Desktop/THE LEGEND OF ZELDA.sra'
 menu(argv[1])
