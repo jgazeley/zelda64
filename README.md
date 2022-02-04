@@ -1,5 +1,5 @@
 # zelda
-Save Game Name Editor for Ocarina of Time (N64 Version/Project 64/Mupen64/RetroArch/Ares)
+Save Game Name Editor for Zelda: Ocarina of Time (N64 Version/Project 64/Mupen64/RetroArch/Ares)
 
 An easy tool to change the file names in The Legend of Zelda | Ocarina of Time save files. Works with common formats .sra, .ram, and .srm which are all the formats that I know of. 
 
