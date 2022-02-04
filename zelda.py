@@ -145,7 +145,7 @@ def write(sram, slot, region, name):
 	f.close()
 
 #################################################################################
-# Adds up 16-bit words of length 0x1352 from save file offset position to checksum position
+# Adds up 16-bit words from save file offset position to checksum position (length 0x1352)
 # Returns 16-bit checksum in big endian (N64 native)
 # Parameters: .sra/.ram/.srm <filepath> and save position (1-3)
 def checksum(sram, slot):
