@@ -1,5 +1,5 @@
 # zelda
-Save Game Name Editor for Zelda: Ocarina of Time (N64 Version/Project 64/Mupen64/RetroArch/Ares) written by Jayson Gazeley in Python
+Save Game Name Editor for Zelda: Ocarina of Time (N64 Version/Project 64/Mupen64/RetroArch/Ares) written in Python
 
 An easy tool to change the file names in The Legend of Zelda | Ocarina of Time save files. Works with 3 common formats: .sra, .ram, and .srm.
 
