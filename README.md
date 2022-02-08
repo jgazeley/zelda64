@@ -9,6 +9,8 @@ Project 64, M64/Mupen64, and 1964 use (.sra/.fla) save files, Ares uses (.ram/.f
 
 Works with both (NTSC/PAL) versions of the game; you must specify when writing a new name which version (NTSC/PAL) you have.
 
+Requires Python 3 | https://www.python.org/downloads/.
+
 
 Examples from command line:
 
