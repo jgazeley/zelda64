@@ -8,8 +8,8 @@ Project 64, M64/Mupen64, and 1964 use (.sra/.fla) save files, Ares uses (.ram/.f
 Works with both (NTSC/PAL) versions of the game, but you must specify when writing a new name which version (NTSC/PAL) you have.
 
 
-Examples from command line: 
+Examples from command line:
 
-python3 'zelda.py' 'THE LEGEND OF ZELDA.sra'
+python 'zelda64.py' 'THE LEGEND OF ZELDA.sra'
 
-py 'C:\Users\Downloads\zelda.py' 'C:\Users\Games\Retroarch\N64\Saves\Legend of Zelda, The - Ocarina of Time.srm'
+py 'C:\Users\Desktp\zelda64.py' 'C:\Users\Games\Retroarch\N64\Saves\Legend of Zelda, The - Ocarina of Time.srm'
