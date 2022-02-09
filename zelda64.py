@@ -26,6 +26,7 @@ class Save:
 	# Converts player name between ASCII and the games encoding (NTSC/PAL specific)
 	# data: list of byte values from game save file or a string <= 8 characters
 	# enc: options are 'ascii', 'ntsc', and 'pal'
+	# Returns: an array representing player name in hex values or as a string converted to ASCII
 	def convert_name(self, data, enc):
 		if enc == 'ascii':
 			result = ""
@@ -144,7 +145,7 @@ class Save:
 	#################################################################################
 	# Checks if the name contains valid characters and is the correct length. (1-8 characters)
 	# name: list of byte values representing character name (ASCII)
-	# Returns true if name is acceptable for conversion. (A-Z, a-z, 0-9, '.', '-', ' ')
+	# Returns: true if name is acceptable for conversion (A-Z, a-z, 0-9, '.', '-', ' ')
 	def valid_name(self, name):
 		chars = [0x20, 0x2d, 0x2e]
 		i = 0x30
@@ -177,7 +178,7 @@ class Save:
 
 	#################################################################################
 	# Adds up 16-bit words from save file offset position to checksum position. (Ocarina of Time only; see below)
-	# Returns 16-bit checksum in big endian. (N64 native)
+	# Returns: 16-bit checksum in big endian (N64 native)
 	def checksum(self):
 		f = open(self.file, 'rb')
 		x = self.address[0]
@@ -201,7 +202,7 @@ class Save:
 			f.seek(self.address[2])
 		if self.endian == 'little':
 			f.seek(self.address[2] +2)
-			print(hex(self.address[2] +2))
+			# print(hex(self.address[2] +2))
 
 		if self.game == "Ocarina of Time":
 			result += int.from_bytes(f.read(2), self.endian)
@@ -212,26 +213,27 @@ class Save:
 		return result & 0xffff
 
 #################################################################################
-# Valid file sizes are: 32 KB (ocarina) / 64 KB to 128 KB (majora) / 290 KB (retroarch)
+# Valid file sizes are: 32 KB (Ocarina) / 64 KB to 128 KB (Majora) / 290 KB (Retroarch)
 # Creates save objects for each file position and assigns the appropriate address for the name and checksum data.
 # file: the input file containing game saves (.sra/.fla/.ram/.srm)
+# Returns: 2 or 3 Save objects as an array
 def initiate(file):
 
 	if getsize(file) < 0x8000:
 		print('File size too small.')
 		exit()
 
-	# Reads 32 KB from file unless file is a Retroarch save (.srm), in which case reads 290 KB.
+	# Reads 32 KB from file; adjusts starting address if Retroarch save. (.srm)
 	buffer = 0x8000
 	if getsize(file) == 0x48800:
 		retroarch = True
-		buffer = 0x48800
 	else:
 		retroarch = False
 
 	data = 0
-	print(hex(buffer))
 	with open(file, 'rb') as f:
+		if retroarch:
+			f.seek(0x20800)
 		data = f.read(buffer)
 		f.close()
 		del(f)
@@ -258,11 +260,8 @@ def initiate(file):
 	bound = 3; # number of save slots
 	if game == "Majora's Mask":
 		offset = 0x0; n = 0x2c; chk = 0x1008; size = 0x4000; bound = 2;
-
-	# Adjusts addresses for Retroarch files.
-	if retroarch:
-		offset += 0x20800
-		if game == "Majora's Mask":
+		# Adjusts offset for Majora's Mask Retroarch files.
+		if retroarch:
 			offset += 0x8000
 
 	# Creates new save objects. (2 or 3; for Majora's Mask or Ocarina of Time respectively)
@@ -299,7 +298,7 @@ def menu():
 		print("Zelda 64: Save Name Editor | " + saves[0].game)
 		print("----------------------------------------------------------------")
 
-		# Display save files
+		# Displays save files
 		x = 0
 		for x in range(0, saves[x].bound):
 			if saves[x].valid:
@@ -309,7 +308,7 @@ def menu():
 			print("File " + str(x + 1) + ": " + txt)
 			# print(hex(saves[x].address[0]&0xffff) + "  " + hex(saves[x].address[2]&0xffff))
 
-		# Pick save slot
+		# Prompts user to pick a save slot
 		a = True
 		while a:
 			key = input('Enter a save slot number to change the file name, or any other key to quit: ')
@@ -328,7 +327,7 @@ def menu():
 			else:
 				exit()
 
-		# Confirm player name change
+		# Confirms user's intent to change player name
 		b = True
 		while b:
 			key = input('Are you sure? y/n: ')
@@ -345,7 +344,7 @@ def menu():
 			if saves[x].valid_name(name):
 				c = False
 
-		# Determine NTSC / PAL
+		# Determines NTSC / PAL for re-encoding
 		if game == 'Ocarina of Time':
 			d = True
 			while d:
