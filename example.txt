@@ -1,0 +1,32 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20220207222032
+**********************
+
+PS D:\Games\Emulators\N64\Project64\1.6\Save> python zelda64.py 'THE LEGEND OF ZELDA.sra'
+
+----------------------------------------------------------------
+Zelda 64: Save Name Editor | Ocarina of Time
+----------------------------------------------------------------
+File 1: JAYSON
+File 2:
+File 3:
+Enter a save slot number to change the file name, or any other key to quit: 1
+Are you sure? y/n: y
+Please enter a new name: Link
+Please enter 1 for NTSC (US/JAPAN) or 2 for PAL (EUROPE): 1
+
+Name successfully written!
+
+----------------------------------------------------------------
+Zelda 64: Save Name Editor | Ocarina of Time
+----------------------------------------------------------------
+File 1: Link
+File 2:
+File 3:
+Enter a save slot number to change the file name, or any other key to quit: x
+PS D:\Games\Emulators\N64\Project64\1.6\Save> Stop-Transcript
+**********************
+Windows PowerShell transcript end
+End time: 20220207222136
+**********************
