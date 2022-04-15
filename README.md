@@ -1,6 +1,6 @@
 # zelda64
 
-Save Game Name Editor for Zelda: Ocarina of Time & Majora's Mask (N64 Version/Project 64/M64plus/Mupen64/RetroArch/Ares)<br>
+Save Game Name Editor for **Zelda: Ocarina of Time** & **Majora's Mask** (N64 Version/Project 64/M64plus/Mupen64/RetroArch/Ares)<br>
 _Written by Jayson Gazeley in Python_
 
 A tool to change the player file names in Zelda 64 emulator save files or native saves dumped from a Gameshark or other device. Works with common formats: ( .sra / .fla / .ram / .srm )
