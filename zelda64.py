@@ -360,6 +360,22 @@ def menu():
 		saves[x].write_name(name, region)
 		print('\nName successfully written!\n')
 
-saves = initiate(argv[1])
-game = saves[0].game
-menu()
+if len(argv) < 2:
+	print("Must enter a .sra file.")
+
+elif len(argv) == 2:
+
+	if argv[1] == '--help' or argv[1] == '-help' or argv[1] == '-h' or argv[1] == '-H':
+		print("Usage: py zelda64.py <PATH-TO-SRA-FILE>")
+		print("Example: py 'D:\\Desktop\\zelda64.py' 'D:\\Desktop\\THE LEGEND OF ZELDA.sra'")
+		exit()
+
+	if exists(argv[1]):
+		saves = initiate(argv[1])
+		game = saves[0].game
+		menu()
+	else:
+		print("File '" + argv[1] + "' does not exist.")
+
+else:
+	print("Only a single file can be modified at a time.")
