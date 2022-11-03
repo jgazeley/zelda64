@@ -16,4 +16,4 @@ Examples from command line:
 
 python 'zelda64.py' 'THE LEGEND OF ZELDA.sra'
 
-py 'C:\Users\Desktp\zelda64.py' 'C:\Users\Games\Retroarch\N64\Saves\Legend of Zelda, The - Ocarina of Time.srm'
+py 'C:\Users\Desktop\zelda64.py' 'C:\Users\Games\Retroarch\N64\Saves\Legend of Zelda, The - Ocarina of Time.srm'
